@@ -1,4 +1,14 @@
 #!/bin/bash
-yay -S wofi pywal
-wal -i ~/Dotfiles/wallpapers/pywallpaper.jpg
-sudo cp -a ~/Dotfiles/.config/wofi ~/.config/
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./common.sh
+source "$SCRIPT_DIR/common.sh"
+
+section "Wofi Installer"
+ensure_prereqs
+
+install_packages wofi python-pywal16
+copy_config_dir "wofi" "wofi"
+apply_default_pywal
+
+success "Wofi component installed."
