@@ -13,5 +13,6 @@ end
 vim.opt.rtp:prepend(lazypath)
 vim.cmd("set number")
 require("vim-options")
+require("ui_settings").init()
 require("lazy").setup("plugins")
 vim.opt.termguicolors = true

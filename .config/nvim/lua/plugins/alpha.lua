@@ -5,14 +5,6 @@ return {
     config = function()
         local dashboard = require("alpha.themes.dashboard")
 
-        -- Load pywal colors
-        vim.cmd("source ~/.cache/wal/colors-wal.vim")
-        local color9 = vim.g.color9 or "#ffffff"
-        local color3 = vim.g.color3 or "#ffffff"
-        local color4 = vim.g.color4 or "#ffffff"
-        local color5 = vim.g.color5 or "#ffffff"
-        local color6 = vim.g.color6 or "#ffffff"
-
         -- Helper function for UTF-8 character lengths
         local function getCharLen(s, pos)
             local byte = string.byte(s, pos)
@@ -51,6 +43,30 @@ return {
             return dashboard.opts
         end
 
+        local function hl_fg(group, fallback)
+            local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = group, link = true })
+            if ok and hl and hl.fg then
+                return string.format("#%06x", hl.fg)
+            end
+            return fallback
+        end
+
+        local function refresh_alpha_palette()
+            local colors = {
+                ["a"] = { fg = hl_fg("Identifier", "#a6e3a1") },
+                ["b"] = { fg = hl_fg("Function", "#89b4fa") },
+                ["c"] = { fg = hl_fg("Keyword", "#f38ba8") },
+                ["d"] = { fg = hl_fg("Type", "#cba6f7") },
+                ["e"] = { fg = hl_fg("String", "#f9e2af") },
+            }
+
+            for key, color in pairs(colors) do
+                vim.api.nvim_set_hl(0, "Alpha" .. key, color)
+            end
+
+            pcall(vim.cmd, "AlphaRedraw")
+        end
+
         -- Dashboard header
         local opts = applyColors({
             [[███████╗    ██████╗ ]],
@@ -61,11 +77,11 @@ return {
             [[╚══════╝    ╚═╝     ]],
             [[N  E  O  V  I  M    ]],
         }, {
-            ["a"] = { fg = color9, ctermfg = 33 },
-            ["b"] = { fg = color3, ctermfg = 33 },
-            ["c"] = { fg = color4, ctermfg = 33 },
-            ["d"] = { fg = color5, ctermfg = 33 },
-            ["e"] = { fg = color6, ctermfg = 33 },
+            ["a"] = { fg = "#a6e3a1" },
+            ["b"] = { fg = "#89b4fa" },
+            ["c"] = { fg = "#f38ba8" },
+            ["d"] = { fg = "#cba6f7" },
+            ["e"] = { fg = "#f9e2af" },
         }, {
             [[bbbbbbba    cccccca ]],
             [[bbaaaaaa    ccaaaaa ]],
@@ -93,5 +109,13 @@ return {
 
         -- Finally setup Alpha with the generated opts
         require("alpha").setup(opts)
+        refresh_alpha_palette()
+
+        vim.api.nvim_create_autocmd("ColorScheme", {
+            group = vim.api.nvim_create_augroup("alpha-theme-palette", { clear = true }),
+            callback = function()
+                refresh_alpha_palette()
+            end,
+        })
     end,
 }

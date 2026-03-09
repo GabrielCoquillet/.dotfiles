@@ -8,6 +8,24 @@ return {
             "nvim-treesitter/nvim-treesitter",  -- ensure Treesitter loads first
         },
         config = function()
+            -- Telescope current_buffer_fuzzy_find on 0.1.x uses
+            -- require("nvim-treesitter.parsers").ft_to_lang(). Some parser builds
+            -- don't expose it, so provide a compatibility shim.
+            local ok_parsers, ts_parsers = pcall(require, "nvim-treesitter.parsers")
+            if ok_parsers and ts_parsers and ts_parsers.ft_to_lang == nil then
+                ts_parsers.ft_to_lang = function(ft)
+                    if vim.treesitter and vim.treesitter.language then
+                        if vim.treesitter.language.ft_to_lang then
+                            return vim.treesitter.language.ft_to_lang(ft)
+                        end
+                        if vim.treesitter.language.get_lang then
+                            return vim.treesitter.language.get_lang(ft)
+                        end
+                    end
+                    return ft
+                end
+            end
+
             local ts_ok, ts_utils = pcall(require, "telescope.previewers.utils")
             if ts_ok and ts_utils then
                 -- override ts_highlighter to prevent ft_to_lang errors
@@ -34,8 +52,8 @@ return {
             telescope.load_extension("ui-select")
 
             local builtin = require("telescope.builtin")
-            vim.keymap.set("n", "<C-p>", builtin.find_files)
-            vim.keymap.set("n", "<A-f>", builtin.live_grep)
+            vim.keymap.set("n", "<C-p>", builtin.find_files, { desc = "Telescope: Find files" })
+            vim.keymap.set("n", "<A-f>", builtin.live_grep, { desc = "Telescope: Live grep" })
 
             -- Global function for folder search
             _G.search_and_scope_into_directory = function()
@@ -53,7 +71,17 @@ return {
                     end,
                 })
             end
-            vim.keymap.set("n", "<A-d>", _G.search_and_scope_into_directory)
+            vim.keymap.set("n", "<A-d>", _G.search_and_scope_into_directory, { desc = "Telescope: Pick dir and cd" })
+
+            vim.keymap.set("n", "<leader>/", function()
+                local ok = pcall(builtin.current_buffer_fuzzy_find, require("telescope.themes").get_dropdown({
+                    winblend = 10,
+                    previewer = false,
+                }))
+                if not ok then
+                    builtin.live_grep({ grep_open_files = true, prompt_title = "Grep Open Files" })
+                end
+            end, { desc = "Telescope: Fuzzy search in current buffer" })
         end,
     },
     {
