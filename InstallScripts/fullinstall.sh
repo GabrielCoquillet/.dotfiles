@@ -49,6 +49,13 @@ backup_config() {
     success "Backup created at $backup_path"
 }
 
+backup_bashrc() {
+    local backup_bashrc="${HOME}/.bashrc_$(date +%Y%m%d_%H%M%S)"
+    info "backing up ~/.bashrc → $backup_bashrc"
+    cp -r "$HOME/.bashrc" "$backup_bashrc"
+    success "Backup created at $backup_bashrc"
+}
+
 apply_dotfiles() {
     section "Applying Dotfiles"
     info "Copying wallpapers..."
@@ -204,7 +211,7 @@ read -rp "Installation mode — (A)utomatic or (M)anual? [A]: " install_choice
 install_choice="${install_choice:-a}"
 
 read -rp "Backup your current ~/.config before installing? (Y/n): " backup_choice
-[[ "${backup_choice:-y}" =~ ^[Yy]$ ]] && backup_config
+[[ "${backup_choice:-y}" =~ ^[Yy]$ ]] && backup_config && backup_bashrc
 
 case "${install_choice,,}" in
     a) auto_install  ;;
