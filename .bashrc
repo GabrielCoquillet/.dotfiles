@@ -5,11 +5,14 @@ eval "$(zoxide init bash)"
 eval "$(fzf --bash)"
 [[ $- != *i* ]] && return
 alias lsd='eza --icons'
+alias search='yay -Q | grep'
 alias pacup='sudo pacman -Rns $(pacman -Qdtq)'
 alias grep='grep --color=auto'
 alias pool='clear && asciiquarium'
 alias f='clear && myfetch -i e -f -c 16 -C "  "'
-alias bye='sudo paplay ~/.config/sounds/shudown.mp3; sudo shutdown -h now'
+alias bye='paplay ~/.config/sounds/shudown.mp3 && shutdown now'
+alias devbits-ssh='ssh -i ~/.ssh/eli.pem ec2-user@3.238.253.25'
+alias update-devbits='scp -i ~/.ssh/eli.pem /home/ws-73/OldFiles/projects/DevBits/backend/./bin/devbits-api ec2-user@3.238.253.25:/tmp/devbits-api'
 alias loop='sudo reboot'
 alias h='start-hyprland'
 alias fonts='fc-list -f "%{family}\n"'

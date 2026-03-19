@@ -186,7 +186,7 @@ CORE_PACKAGES=(
     cava brightnessctl clock-rs-git nerd-fonts nwg-look qogir-icon-theme
     materia-gtk-theme illogical-impulse-bibata-modern-classic-bin
     thunar gvfs tumbler eza bottom htop libreoffice-fresh spotify-launcher ncspot
-    discord visual-studio-code-bin yazi lazygit hyprdvd
+    discord visual-studio-code-bin yazi lazygit hyprdvd swayosd-git
 )
 
 OPTIONAL_PACKAGES=(blueman bluez pipewire pipewire-pulse pipewire-alsa
