@@ -43,23 +43,60 @@ fi
 # ── Shared helpers ────────────────────────────────────────────────────────────
 
 backup_config() {
-    local backup_path="${HOME}/.config_backup_$(date +%Y%m%d_%H%M%S)"
-    info "Backing up ~/.config → $backup_path"
-    cp -r "$HOME/.config" "$backup_path"
-    success "Backup created at $backup_path"
+    local timestamp
+    timestamp="$(date +%Y%m%d_%H%M%S)"
+
+    local items=(
+        "$HOME/.config:$HOME/.config_backup_${timestamp}"
+        "$HOME/.icons:$HOME/.icons_backup_${timestamp}"
+        "$HOME/wallpapers:$HOME/wallpapers_backup_${timestamp}"
+    )
+
+    local backed_up=false
+
+    for item in "${items[@]}"; do
+        local source_path="${item%%:*}"
+        local backup_path="${item#*:}"
+
+        if [ -e "$source_path" ]; then
+            info "Backing up $(basename "$source_path") → $backup_path"
+            mkdir -p "$backup_path"
+            cp -a "$source_path/." "$backup_path/"
+            success "Backed up $(basename "$source_path")"
+            backed_up=true
+        else
+            warn "$(basename "$source_path") not found — skipping backup."
+        fi
+    done
+
+    if $backed_up; then
+        success "Backups created for .config, .icons, and wallpapers"
+    else
+        warn "No dotfiles were backed up."
+    fi
 }
 
 backup_bashrc() {
-    local backup_bashrc="${HOME}/.bashrc_$(date +%Y%m%d_%H%M%S)"
-    info "backing up ~/.bashrc → $backup_bashrc"
-    cp -r "$HOME/.bashrc" "$backup_bashrc"
-    success "Backup created at $backup_bashrc"
+    local backup_dir="${HOME}/.bashrc_backup_$(date +%Y%m%d_%H%M%S)"
+
+    if [ ! -f "$HOME/.bashrc" ]; then
+        warn "~/.bashrc not found — skipping backup."
+        return
+    fi
+
+    info "Backing up .bashrc → $backup_dir"
+    mkdir -p "$backup_dir"
+    cp -a "$HOME/.bashrc" "$backup_dir/.bashrc"
+    success "Backup created at $backup_dir/.bashrc"
 }
 
 apply_dotfiles() {
     section "Applying Dotfiles"
     info "Copying wallpapers..."
     cp -a "$DOTFILES_DIR/wallpapers" "$HOME/"
+
+    info "Copying .icons..."
+    cp -a "$DOTFILES_DIR/.icons" "$HOME/"
 
     info "Copying .config files..."
     cp -a "$DOTFILES_DIR/.config/." "$HOME/.config/"
@@ -149,7 +186,7 @@ CORE_PACKAGES=(
     cava brightnessctl clock-rs-git nerd-fonts nwg-look qogir-icon-theme
     materia-gtk-theme illogical-impulse-bibata-modern-classic-bin
     thunar gvfs tumbler eza bottom htop libreoffice-fresh spotify-launcher ncspot
-    discord visual-studio-code-bin
+    discord visual-studio-code-bin yazi lazygit
 )
 
 OPTIONAL_PACKAGES=(blueman bluez pipewire pipewire-pulse pipewire-alsa
@@ -210,7 +247,7 @@ section "Welcome"
 read -rp "Installation mode — (A)utomatic or (M)anual? [A]: " install_choice
 install_choice="${install_choice:-a}"
 
-read -rp "Backup your current ~/.config before installing? (Y/n): " backup_choice
+read -rp "Backup your current dotfiles before installing? (Y/n): " backup_choice
 [[ "${backup_choice:-y}" =~ ^[Yy]$ ]] && backup_config && backup_bashrc
 
 case "${install_choice,,}" in
